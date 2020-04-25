@@ -1,12 +1,15 @@
+import re
+
 import requests
+from bson.json_util import dumps
 from pymongo import MongoClient
 
 from flask import Flask, render_template, jsonify, request
 
 app = Flask(__name__)
 
-# client = MongoClient('localhost', 27017)
-# db = client.dbsparta
+client = MongoClient('localhost', 27017)
+db = client.gyeonggi_money
 
 
 # HTML을 보여주겠다
@@ -17,20 +20,23 @@ def home():
 
 # API 역할을 하는 부분
 # DB에 저장되어 있는 모든 것을 조회하겠다
+@app.route('/api/search', methods=['GET'])
+def store_search_list():
+    keyword = request.args.get("keyword")
+    print(keyword)
+    stores = []
+    rgx = re.compile(f'.*{keyword}.*', re.IGNORECASE)
+    for store in db.store.find({'CMPNM_NM': rgx}, {'_id': False}).limit(10):
+        print(store)
+        stores.append(store)
+    return jsonify({'result': 'success', 'store_list': stores})
+
+
 @app.route('/api/list', methods=['GET'])
 def store_list():
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'}
-    res = requests.get(
-        'https://openapi.gg.go.kr/RegionMnyFacltStus?Key=7c85b811c8aa4d70a8d44ce50938d346&Type=json&pSize=10',
-        headers=headers)
-    res_obj = res.json()
-
     stores = []
-    datas = res_obj['RegionMnyFacltStus']
-    for data in datas:
-        if 'row' in data:
-            stores = data['row']
+    for store in db.store.find({}, {'_id': False}).limit(10):
+        stores.append(store)
     return jsonify({'result': 'success', 'store_list': stores})
 
 

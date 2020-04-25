@@ -36,11 +36,14 @@
     });
 
     function search() {
+        const keyword = $('#keyword').val();
+
         $.ajax({
             type: "GET",
-            url: "http://127.0.0.1:5000/api/list",
+            url: "http://127.0.0.1:5000/api/search?keyword="+keyword,
             data: {},
             success: function (response) {
+                console.log(response)
                 // console.log(response['store_list'][0]['INDUTYPE_NM'])
                 let articles = response['store_list'];
                 // if(response['result']!=='success'){
@@ -48,6 +51,7 @@
                 //     return;
                 // }
 
+                clean_list();
                 for (let i = 0; i < articles.length; i++) {
                     make_list(articles[i]['INDUTYPE_NM'], articles[i]['CMPNM_NM'], articles[i][
                         'REFINE_ROADNM_ADDR'
@@ -57,6 +61,12 @@
             }
         })
     }
+
+    function clean_list() {
+        $('div.article').remove();
+
+    }
+
 
     function make_list(INDUTYPE_NM, CMPNM_NM, REFINE_ROADNM_ADDR, TELNO) {
         if (INDUTYPE_NM === null) {
@@ -90,6 +100,7 @@
                         <p>좋아요</p>
                     </div>
                 </div>
+                <div class='km-info'>0.0km</div>
             </div>`
         $('#section').append(temp_html);
     }
@@ -118,12 +129,12 @@
     }
 
     #header .form-control {
-        width: 450px;
+        width: 360px;
         margin-right: 15px;
     }
 
     #header .title {
-        font-size: 35px;
+        font-size: 30px;
         margin-bottom: 30px;
         text-align: center;
         /* width: 700px; */
@@ -159,14 +170,24 @@
     #section {
         width: 700px;
         margin: 0 auto;
+        /* display:flex;
+        justify-content: center; */
+
     }
 
     #section .article {
-        width: 700px;
+        width: 600px;
         background: #EAEAEA;
-        border-radius: 10px;
+        border-radius: 10px 0 0 10px;
         padding: 10px;
         margin-bottom: 20px;
+        box-shadow: 0px 0px 10px gray;
+    }
+
+    #section .km-info {
+        width: 100px;
+        background: #EAEAEA;
+        border-radius: 0 10px 10px 0;
     }
 
     #section .s_category,
@@ -184,16 +205,14 @@
         margin: 5px;
     }
 
-    #page{
-        display:flex;
+    #page {
+        display: flex;
         justify-content: center;
     }
 
-    #page div{
-        margin-right:20px;
+    #page div {
+        margin-right: 20px;
     }
-
-
 </style>
 
 <body>
@@ -201,11 +220,11 @@
     <div class='wrap'>
         <div id='header'>
             <div id='title'>
-                <img src="../img/logo.png" alt="logo">
-                <div class='title'>가맹점 찾기</div>
+                <!-- <img src="../img/logo.png" alt="logo"> -->
+                <div class='title'>경기지역화폐 가맹점 찾기</div>
             </div>
             <div id='nav'>
-                <!-- BUTTON -->
+                <!-- BUTTON 지역 -->
                 <div class="btn-group">
                     <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">
@@ -216,17 +235,46 @@
                         <a class="dropdown-item" href="#">화성시</a>
                     </div>
                 </div>
+                <!-- BUTTON 업종 -->
+                <div class="btn-group">
+                    <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        업종
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="#">숙박</a>
+                        <a class="dropdown-item" href="#">여행</a>
+                        <a class="dropdown-item" href="#">레저</a>
+                        <a class="dropdown-item" href="#">문화/취미</a>
+                        <a class="dropdown-item" href="#">의류/잡화/생활가전</a>
+                        <a class="dropdown-item" href="#">주유수</a>
+                        <a class="dropdown-item" href="#">유통</a>
+                        <a class="dropdown-item" href="#">서적/문구</a>
+                        <a class="dropdown-item" href="#">학원</a>
+                        <a class="dropdown-item" href="#">사무통신</a>
+                        <a class="dropdown-item" href="#">자동차판매</a>
+                        <a class="dropdown-item" href="#">서비스</a>
+                        <a class="dropdown-item" href="#">보험</a>
+                        <a class="dropdown-item" href="#">병원</a>
+                        <a class="dropdown-item" href="#">약국</a>
+                        <a class="dropdown-item" href="#">기타 의료기관</a>
+                        <a class="dropdown-item" href="#">미용/안경/보건위생</a>
+                        <a class="dropdown-item" href="#">일반/휴게음식</a>
+                        <a class="dropdown-item" href="#">제과/음료식품</a>
+                        <a class="dropdown-item" href="#">기타</a>
+                    </div>
+                </div>
                 <!-- SEARCH BAR -->
                 <form class="form-inline my-2 my-lg-0">
-                    <input class="form-control" type="text" placeholder="지역명을 입력하세요">
-                    <button onclick=search() class="btn btn-outline-success my-2 my-sm-0" type="submit">찾기</button>
+                    <input id='keyword' class="form-control" type="text" placeholder="지역명을 입력하세요">
+                    <button id="search-keyword" onclick="search(); return false;" class="btn btn-outline-success my-2 my-sm-0">찾기</button>
                 </form>
             </div>
             <div class='around'>
                 <p>내 주변 가맹점 찾기</p>
             </div>
         </div>
-        <div  id="map">
+        <div id="map">
             <div style="width:100%;height:400px;"></div>
         </div>
 
@@ -236,17 +284,28 @@
 
         <!-- NEXT PAGE -->
         <div id='page'>
-            <div><p><a href="#">1</a></p></div>
-            <div><p><a href="#">2</a></p></div>
-            <div><p><a href="#">3</a></p></div>
+            <div>
+                <p><a href="#">1</a></p>
+            </div>
+            <div>
+                <p><a href="#">2</a></p>
+            </div>
+            <div>
+                <p><a href="#">3</a></p>
+            </div>
         </div>
 
     </div>
     <script>
         var mapOptions = {
-            center: new naver.maps.LatLng(37.3595704, 127.105399),
+            center: new naver.maps.LatLng(37.673069059, 126.80090346),
             zoom: 10
         };
+
+        var marker = new naver.maps.Marker({
+            position: new naver.maps.LatLng(37.673069059, 126.80090346),
+            map: map
+        });
 
         var map = new naver.maps.Map('map', mapOptions);
     </script>
