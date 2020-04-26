@@ -27,208 +27,213 @@
 
     <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=a1zf0fn61s">
     </script>
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .wrap {
+            width: 1000px;
+            margin: 0 auto;
+        }
+
+        #header {
+            width: 700px;
+            margin: 0 auto;
+            margin-top: 50px;
+            margin-bottom: 30px;
+        }
+
+        #header .form-control {
+            width: 360px;
+            margin-right: 15px;
+        }
+
+        #header .title {
+            font-size: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        #header .btn {
+            width: 100px;
+        }
+
+        #header .around {
+            margin-left: 10px;
+            margin-top: 10px;
+        }
+
+        #title {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        #nav {
+            display: flex;
+            justify-content: space-around;
+            height: 38px;
+        }
+
+        .mb-3 {
+            width: 100px;
+        }
+
+        #map {
+            width: 700px;
+            background: #797979;
+            height: 300px;
+            margin: 0 auto;
+            margin-bottom: 20px;
+        }
+
+        #section {
+            width: 700px;
+            margin: 0 auto;
+        }
+
+        #section .article {
+            width: 700px;
+            background: #EAEAEA;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0px 0px 10px gray;
+        }
+
+        #section .km-info {
+            width: 100px;
+            background: #EAEAEA;
+            border-radius: 0 10px 10px 0;
+        }
+
+        #section .s_category,
+        .s_address,
+        .s_num {
+            font-size: 12px;
+        }
+
+        #section .s_name {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        #section p {
+            margin: 5px;
+        }
+
+        #page {
+            display: flex;
+            justify-content: center;
+        }
+
+        #page div {
+            margin-right: 20px;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            $('section').html('');
+            search();
+        });
+
+        function search() {
+            const keyword = $('#keyword').val();
+            const sigun = $('#sigun-select option:selected').val();
+            const sector = $('#sectors-select option:selected').val();
+
+            console.log("keyword: ", keyword);
+
+            $.ajax({
+                type: "GET",
+                url: `http://127.0.0.1:5000/api/search?sigun=${sigun}&sector=${sector}&keyword=${keyword}`,
+                data: {},
+                success: function (response) {
+                    store_count = response['store_count'] / 20
+                    
+                    let articles = response['store_list'];
+                    if (response['result'] !== 'success') {
+                        alert('다시 입력하세요');
+                        return;
+                    }
+
+                    // 가맹점 리스트
+                    clean_list();
+                    for (let i = 0; i < articles.length; i++) {
+                        make_list(articles[i]['INDUTYPE_NM'], articles[i]['CMPNM_NM'], articles[i][
+                            'REFINE_ROADNM_ADDR'
+                        ], articles[i]['TELNO'])
+                    }
+
+                    // 화면 하단 페이지 번호 표시
+                    const page = $('#page');
+                    for (i = 1; i <= store_count + 1; i++) {
+                        let temp_html =
+                            `<div class='page'> 
+                                <p>${i}</p>                   
+                            </div>`
+                        $('#page').append(temp_html);
+                    }
+                }
+            })
+        }
+
+        function clean_list() {
+            $('div.article').remove();
+            $('div.page').remove();
+        }
+
+        function make_list(INDUTYPE_NM, CMPNM_NM, REFINE_ROADNM_ADDR, TELNO) {
+            if (INDUTYPE_NM === null) {
+                INDUTYPE_NM = '미등록';
+            }
+            if (CMPNM_NM === null) {
+                CMPNM_NM = '미등록';
+            }
+            if (REFINE_ROADNM_ADDR === null) {
+                REFINE_ROADNM_ADDR = '미등록';
+            }
+            if (TELNO === null) {
+                TELNO = '미등록';
+            }
+            let temp_html =
+                `<div class="article">
+                    <div class=info>
+                        <div class='s_category'>
+                            <p>${INDUTYPE_NM}</p>
+                        </div>
+                        <div class='s_name'>
+                            <p>${CMPNM_NM}</p>
+                        </div>
+                        <div class='s_address'>
+                            <p>${REFINE_ROADNM_ADDR}</p>
+                        </div>
+                        <div class='s_num'>
+                            <p>${TELNO}</p>
+                        </div>
+                        <div>
+                            <p>좋아요</p>
+                        </div>
+                    </div>
+                <div class='km-info'>0.0km</div>
+                </div>`
+            $('#section').append(temp_html);
+        }
+    </script>
+
 </head>
 
-<script>
-    $(document).ready(function () {
-        $('section').html('');
-        search();
-    });
-
-    function search() {
-        const keyword = $('#keyword').val();
-        const sigun = $('#sigun-select option:selected').val();
-        const sector = $('#sectors-select option:selected').val();
-
-        $.ajax({
-            type: "GET",
-            url: `http://127.0.0.1:5000/api/search?sigun=${sigun}&sector=${sector}&keyword=${keyword}`,
-            data: {},
-            success: function (response) {
-                console.log(response)
-                // console.log(response['store_list'][0]['INDUTYPE_NM'])
-                let articles = response['store_list'];
-                // if(response['result']!=='success'){
-                //     alert('지역명을 다시 입력하세요');
-                //     return;
-                // }
-
-                clean_list();
-                for (let i = 0; i < articles.length; i++) {
-                    make_list(articles[i]['INDUTYPE_NM'], articles[i]['CMPNM_NM'], articles[i][
-                        'REFINE_ROADNM_ADDR'
-                    ], articles[i]['TELNO'])
-
-                }
-            }
-        })
-    }
-
-    function clean_list() {
-        $('div.article').remove();
-
-    }
-
-
-    function make_list(INDUTYPE_NM, CMPNM_NM, REFINE_ROADNM_ADDR, TELNO) {
-        if (INDUTYPE_NM === null) {
-            INDUTYPE_NM = '미등록';
-        }
-        if (CMPNM_NM === null) {
-            CMPNM_NM = '미등록';
-        }
-        if (REFINE_ROADNM_ADDR === null) {
-            REFINE_ROADNM_ADDR = '미등록';
-        }
-        if (TELNO === null) {
-            TELNO = '미등록';
-        }
-        let temp_html =
-            `<div class="article">
-                <div class=info>
-                    <div class='s_category'>
-                        <p>${INDUTYPE_NM}</p>
-                    </div>
-                    <div class='s_name'>
-                        <p>${CMPNM_NM}</p>
-                    </div>
-                    <div class='s_address'>
-                        <p>${REFINE_ROADNM_ADDR}</p>
-                    </div>
-                    <div class='s_num'>
-                        <p>${TELNO}</p>
-                    </div>
-                    <div>
-                        <p>좋아요</p>
-                    </div>
-                </div>
-                <div class='km-info'>0.0km</div>
-            </div>`
-        $('#section').append(temp_html);
-    }
-</script>
-
-<style>
-    body {
-        font-family: 'Noto Sans KR', sans-serif;
-    }
-
-    * {
-        margin: 0;
-        padding: 0;
-    }
-
-    .wrap {
-        width: 1000px;
-        margin: 0 auto;
-    }
-
-    #header {
-        width: 700px;
-        margin: 0 auto;
-        margin-top: 50px;
-        margin-bottom: 30px;
-    }
-
-    #header .form-control {
-        width: 360px;
-        margin-right: 15px;
-    }
-
-    #header .title {
-        font-size: 30px;
-        margin-bottom: 30px;
-        text-align: center;
-        /* width: 700px; */
-    }
-
-    #header .btn {
-        width: 100px;
-    }
-
-    #header .around {
-        margin-left: 10px;
-        margin-top: 10px;
-    }
-
-    #title {
-        display: flex;
-        justify-content: space-around;
-    }
-
-    #nav {
-        display: flex;
-        justify-content: space-around;
-        /* background:tomato; */
-        height: 38px;
-    }
-
-    .mb-3 {
-        width: 100px;
-    }
-
-    #map {
-        width: 700px;
-        background: #797979;
-        height: 300px;
-        margin: 0 auto;
-        margin-bottom: 20px;
-    }
-
-    #section {
-        width: 700px;
-        margin: 0 auto;
-        /* display:flex;
-        justify-content: center; */
-
-    }
-
-    #section .article {
-        width: 600px;
-        background: #EAEAEA;
-        border-radius: 10px 0 0 10px;
-        padding: 10px;
-        margin-bottom: 20px;
-        box-shadow: 0px 0px 10px gray;
-    }
-
-    #section .km-info {
-        width: 100px;
-        background: #EAEAEA;
-        border-radius: 0 10px 10px 0;
-    }
-
-    #section .s_category,
-    .s_address,
-    .s_num {
-        font-size: 12px;
-    }
-
-    #section .s_name {
-        font-size: 20px;
-        font-weight: 600;
-    }
-
-    #section p {
-        margin: 5px;
-    }
-
-    #page {
-        display: flex;
-        justify-content: center;
-    }
-
-    #page div {
-        margin-right: 20px;
-    }
-</style>
-
 <body>
-
     <div class='wrap'>
         <div id='header'>
             <div id='title'>
-                <!-- <img src="../img/logo.png" alt="logo"> -->
                 <div class='title'>경기지역화폐 가맹점 찾기</div>
             </div>
             <div id='nav'>
@@ -250,14 +255,12 @@
                         <option value="약국">약국</option>
                     </select>
                 </div>
-                <!-- SEARCH BAR -->
+                <!-- 검색바 -->
                 <form class="form-inline my-2 my-lg-0">
                     <input id='keyword' class="form-control" type="text" placeholder="지역명을 입력하세요">
                     <button id="search-keyword" onclick="search(); return false;" type="button"
                         class="btn btn-success">찾기</button>
                 </form>
-
-
             </div>
             <div class='around'>
                 <p>내 주변 가맹점 찾기</p>
@@ -273,15 +276,6 @@
 
         <!-- NEXT PAGE -->
         <div id='page'>
-            <div>
-                <p><a href="#">1</a></p>
-            </div>
-            <div>
-                <p><a href="#">2</a></p>
-            </div>
-            <div>
-                <p><a href="#">3</a></p>
-            </div>
         </div>
 
     </div>
