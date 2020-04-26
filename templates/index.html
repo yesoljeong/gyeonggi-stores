@@ -37,10 +37,12 @@
 
     function search() {
         const keyword = $('#keyword').val();
+        const sigun = $('#sigun-select option:selected').val();
+        const sector = $('#sectors-select option:selected').val();
 
         $.ajax({
             type: "GET",
-            url: "http://127.0.0.1:5000/api/search?keyword="+keyword,
+            url: `http://127.0.0.1:5000/api/search?sigun=${sigun}&sector=${sector}&keyword=${keyword}`,
             data: {},
             success: function (response) {
                 console.log(response)
@@ -157,6 +159,12 @@
     #nav {
         display: flex;
         justify-content: space-around;
+        /* background:tomato; */
+        height: 38px;
+    }
+
+    .mb-3 {
+        width: 100px;
     }
 
     #map {
@@ -225,50 +233,31 @@
             </div>
             <div id='nav'>
                 <!-- BUTTON 지역 -->
-                <div class="btn-group">
-                    <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false">
-                        지역명
-                    </button>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="#">용인시</a>
-                        <a class="dropdown-item" href="#">화성시</a>
-                    </div>
+                <div class="input-group mb-3">
+                    <select class="custom-select" id="sigun-select">
+                        <option selected>지역명</option>
+                        <option value="수원시">수원시</option>
+                        <option value="용인시">용인시</option>
+                        <option value="화성시">화성시</option>
+                    </select>
                 </div>
                 <!-- BUTTON 업종 -->
-                <div class="btn-group">
-                    <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false">
-                        업종
-                    </button>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="#">숙박</a>
-                        <a class="dropdown-item" href="#">여행</a>
-                        <a class="dropdown-item" href="#">레저</a>
-                        <a class="dropdown-item" href="#">문화/취미</a>
-                        <a class="dropdown-item" href="#">의류/잡화/생활가전</a>
-                        <a class="dropdown-item" href="#">주유수</a>
-                        <a class="dropdown-item" href="#">유통</a>
-                        <a class="dropdown-item" href="#">서적/문구</a>
-                        <a class="dropdown-item" href="#">학원</a>
-                        <a class="dropdown-item" href="#">사무통신</a>
-                        <a class="dropdown-item" href="#">자동차판매</a>
-                        <a class="dropdown-item" href="#">서비스</a>
-                        <a class="dropdown-item" href="#">보험</a>
-                        <a class="dropdown-item" href="#">병원</a>
-                        <a class="dropdown-item" href="#">약국</a>
-                        <a class="dropdown-item" href="#">기타 의료기관</a>
-                        <a class="dropdown-item" href="#">미용/안경/보건위생</a>
-                        <a class="dropdown-item" href="#">일반/휴게음식</a>
-                        <a class="dropdown-item" href="#">제과/음료식품</a>
-                        <a class="dropdown-item" href="#">기타</a>
-                    </div>
+                <div class="input-group mb-3">
+                    <select class="custom-select" id="sectors-select">
+                        <option selected>업종</option>
+                        <option value="일반휴게">일반/휴게음식</option>
+                        <option value="의원">병원</option>
+                        <option value="약국">약국</option>
+                    </select>
                 </div>
                 <!-- SEARCH BAR -->
                 <form class="form-inline my-2 my-lg-0">
                     <input id='keyword' class="form-control" type="text" placeholder="지역명을 입력하세요">
-                    <button id="search-keyword" onclick="search(); return false;" class="btn btn-outline-success my-2 my-sm-0">찾기</button>
+                    <button id="search-keyword" onclick="search(); return false;" type="button"
+                        class="btn btn-success">찾기</button>
                 </form>
+
+
             </div>
             <div class='around'>
                 <p>내 주변 가맹점 찾기</p>

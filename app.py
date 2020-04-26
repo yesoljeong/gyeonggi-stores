@@ -23,10 +23,25 @@ def home():
 @app.route('/api/search', methods=['GET'])
 def store_search_list():
     keyword = request.args.get("keyword")
-    print(keyword)
+    sigun = request.args.get("sigun")
+    sector = request.args.get("sector")
+
+    keyword_rgx = re.compile(f'.*{keyword}.*', re.IGNORECASE)
+    sector_rgx = re.compile(f'.*{sector}.*', re.IGNORECASE)
+    query = {
+        'CMPNM_NM': keyword_rgx,
+        # 'INDUTYPE_NM': sector_rgx
+    }
+
+    if sigun != "지역명":
+        query['SIGUN_NM'] = sigun
+
+    if sector != "업종":
+        query['INDUTYPE_NM'] = sector_rgx
+
+    print('검색조건: ', query)
     stores = []
-    rgx = re.compile(f'.*{keyword}.*', re.IGNORECASE)
-    for store in db.store.find({'CMPNM_NM': rgx}, {'_id': False}).limit(10):
+    for store in db.store.find(query, {'_id': False}).limit(10):
         print(store)
         stores.append(store)
     return jsonify({'result': 'success', 'store_list': stores})
