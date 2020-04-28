@@ -5,7 +5,8 @@ from flask import Flask, render_template, jsonify, request
 
 app = Flask(__name__)
 
-client = MongoClient('localhost', 27017)
+client = MongoClient('mongodb://test:test@localhost', 27017)
+# client = MongoClient('mongodb://localhost', 27017)
 db = client.gyeonggi_money
 
 
@@ -42,4 +43,4 @@ def store_search_list():
 
 
 if __name__ == '__main__':
-    app.run('127.0.0.1', port=5000, debug=True)
+    app.run('0.0.0.0', port=80, debug=True)

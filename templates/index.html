@@ -153,7 +153,7 @@
 
             $.ajax({
                 type: "GET",
-                url: `http://127.0.0.1:5000/api/search?sigun=${sigun}&sector=${sector}&keyword=${keyword}`,
+                url: `/api/search?sigun=${sigun}&sector=${sector}&keyword=${keyword}`,
                 data: {},
                 success: function (response) {
                     store_count = response['store_count'] / 20
@@ -164,16 +164,34 @@
                         return;
                     }
 
+                    // 검색 결과가 없으면 기본 좌표로 지도 표시
+                    if(!articles || articles.length === 0) {
+                        initMap(37.673069059, 126.80090346)
+                        return;
+                    }
+
                     // 가맹점 리스트
-                    clean_list();
+                    clean_list();   // 이전에 검색한 리스트 초기화
+
+                    // 검색 결과 중 첫번째 상점을 기준으로 지도 표시
+                    initMap(articles[0]['REFINE_WGS84_LAT'], articles[0]['REFINE_WGS84_LOGT'])
                     for (let i = 0; i < articles.length; i++) {
+                        // 지도 하단에 상호 정보 표시
                         make_list(articles[i]['INDUTYPE_NM'], articles[i]['CMPNM_NM'], articles[i][
                             'REFINE_ROADNM_ADDR'
                         ], articles[i]['TELNO'])
+
+                        // 지도에 상호의 좌표 정보로 마커 표시
+                        marker(articles[i]['REFINE_WGS84_LAT'], articles[i]['REFINE_WGS84_LOGT'])
                     }
 
                     // 화면 하단 페이지 번호 표시
                     const page = $('#page');
+
+                    // 페이징이 너무 많아져서 10개로 제한 (임시라서 나중에 페이징 처리해야함)
+                    if(store_count > 10) {
+                        store_count = 10;
+                    }
                     for (i = 1; i <= store_count + 1; i++) {
                         let temp_html =
                             `<div class='page'> 
@@ -183,6 +201,25 @@
                     }
                 }
             })
+        }
+
+        var map = {};
+        // 지도를 초기화하는 함수
+        // https://navermaps.github.io/maps.js/docs/tutorial-2-Marker.html
+        function initMap(lat, lon) {
+            var mapOptions = {
+                center: new naver.maps.LatLng(lat, lon),
+                zoom: 10
+            };
+            map = new naver.maps.Map('map', mapOptions);
+        }
+
+        // 지도에 마커를 표시하는 함수
+        function marker(lat, lon) {
+            var marker = new naver.maps.Marker({
+                position: new naver.maps.LatLng(lat, lon),
+                map: map
+            });
         }
 
         function clean_list() {
@@ -253,11 +290,16 @@
                         <option value="일반휴게">일반/휴게음식</option>
                         <option value="의원">병원</option>
                         <option value="약국">약국</option>
+                        <option value="학원">학원</option>
+                        <option value="숙박">숙박</option>
+                        <option value="여행">여행</option>
+                        <option value="서적">서적/문구</option>
+                        <option value="기타">기타</option>
                     </select>
                 </div>
                 <!-- 검색바 -->
                 <form class="form-inline my-2 my-lg-0">
-                    <input id='keyword' class="form-control" type="text" placeholder="지역명을 입력하세요">
+                    <input id='keyword' class="form-control" type="text" placeholder="상호명을 입력하세요">
                     <button id="search-keyword" onclick="search(); return false;" type="button"
                         class="btn btn-success">찾기</button>
                 </form>
@@ -279,20 +321,6 @@
         </div>
 
     </div>
-    <script>
-        var mapOptions = {
-            center: new naver.maps.LatLng(37.673069059, 126.80090346),
-            zoom: 10
-        };
-
-        var marker = new naver.maps.Marker({
-            position: new naver.maps.LatLng(37.673069059, 126.80090346),
-            map: map
-        });
-
-        var map = new naver.maps.Map('map', mapOptions);
-    </script>
-
 </body>
 
 </html>
